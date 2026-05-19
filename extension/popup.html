@@ -199,7 +199,7 @@
 
     textarea#result {
       width: 100%;
-      height: 240px;
+      height: 170px;
       padding: 12px;
       font-size: 13px;
       line-height: 1.55;
@@ -331,11 +331,6 @@
         <button class="seg-btn tone-btn" data-tone="Casual">Casual</button>
       </div>
     </div>
-
-    <div class="field">
-      <label class="field-label" for="extraContext">Add context (optional)</label>
-      <textarea id="extraContext" class="extra-textarea" rows="3" placeholder="e.g. mention I admire their AI infra work, or focus on the SDE role at their startup"></textarea>
-    </div>
   </section>
 
   <button id="generate" class="generate-btn">
@@ -360,6 +355,11 @@
   </div>
 
   <button id="copy" class="copy-btn-full">Copy to Clipboard</button>
+
+  <div class="field" style="margin-top: 12px;">
+    <label class="field-label" for="extraContext">Add context (optional) - then click Generate Note again to refine</label>
+    <textarea id="extraContext" class="extra-textarea" rows="3" placeholder="e.g. mention I admire their AI infra work, or focus on the SDE role at their startup"></textarea>
+  </div>
 
   <p class="footer">Open a LinkedIn profile, pick a tone, click generate.</p>
   <p class="footer" style="margin-top:4px;">&copy; 2026 @maneshreddy</p>

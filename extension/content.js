@@ -180,8 +180,25 @@ function scrapePosts(ownerName) {
   return posts;
 }
 
+function scrapeName() {
+  const candidates = [
+    getText("h1.text-heading-xlarge"),
+    getText(".pv-text-details__left-panel h1"),
+    getText("div.ph5 h1"),
+    getText("section.artdeco-card h1"),
+    getText("h1"),
+  ].filter(
+    (s) =>
+      s &&
+      s.length > 1 &&
+      s.length < 80 &&
+      !/^(activity|about|experience|education|skills|highlights|featured|interests|recommendations)$/i.test(s)
+  );
+  return candidates[0] || "";
+}
+
 function scrapeProfile() {
-  const name = getText("h1.text-heading-xlarge") || getText("h1");
+  const name = scrapeName();
   return {
     name,
     headline: getText(".text-body-medium.break-words"),

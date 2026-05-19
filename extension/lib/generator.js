@@ -7,18 +7,41 @@ function buildSharedRules(userProfile) {
   return `${userBlock}
 
 Shared rules:
-- Anchor on signals that reflect the target's own work and thinking. Allowed anchors, in order of preference: (1) About section, (2) headline, (3) current role/company, (4) prior roles or education, (5) Original posts (only if listed under "Original posts" in the input AND only if the post makes a specific, substantive claim or shares a concrete project/result, not generic life updates or congrats). NEVER anchor on reposts or shared content.
-- If the input lists Original posts, evaluate each one for relevance: does it reveal something specific about how they think or what they're building? If yes, you may use it. If it's a generic life update, congrats, or vague motivational content, IGNORE it and anchor on About/Experience instead.
-- Reference at least one specific, concrete detail: a named company, a named product or project, a specific job function, a tenure, a school, a niche skill, or a specific claim from an original post.
-- NEVER use generic phrases like "your work in AI", "your expertise in [broad field]", "production systems", "your background in tech"; those are bans.
+
+ANCHOR PRIORITY (strict, in order):
+1. The target's CURRENT role at their CURRENT company (highest priority - this is what's relevant for outreach).
+2. The target's About section (if substantial).
+3. The target's headline.
+4. A substantive Original post (only if listed under "Original posts", and only if it makes a specific, concrete claim).
+5. Education, ONLY if nothing above is available.
+
+NEVER anchor on:
+- A past job that ended more than 2 years ago. If the target's experience list shows a current role, anchor on THAT, not on a job from 2018 or 2019. Past jobs are background information, not anchors.
+- Reposts, shared posts, or content the target did not write themselves.
+- Generic phrases like "your work in AI", "your expertise in [broad field]", "production systems", "your background in tech", "extensive experience in [field]". Those are bans.
+
+BANNED OPENERS (do NOT start the body with any of these, regardless of what follows):
+- "I see..." (e.g. "I see you are", "I see that you", "I see your")
+- "I noticed..." (e.g. "I noticed you are", "I noticed your")
+- "I came across..."
+- "I was impressed by..."
+- "I hope this finds you well..."
+Any opener beginning with "I see", "I noticed", "I came across", or "I was impressed by" is auto-rejected.
+
+GREETING (mandatory):
+- If the input gives a target name (Name field is not "(unknown)"), you MUST include the target's first name in the greeting. Example: "Hi Jeremy,". Never just "Hi," when a name is given.
+- If and only if the Name field is "(unknown)" or empty, use "Hi,".
+
+Other rules:
+- If the input lists Original posts, evaluate each one for relevance: does it reveal something specific about how they think or what they're building? If yes, you may use it. If it's a generic life update, congrats, or vague motivational content, IGNORE it.
+- Reference at least one specific, concrete detail: a named company (their CURRENT company), a named product or project, a specific job function, a school, a niche skill, or a specific claim from an original post.
 - Mirror the target's own wording where relevant rather than imposing your own.
-- Sound like a real human wrote it. Avoid templated phrasing, buzzwords, and AI tells. Banned words/phrases: "compelling", "insights", "keen", "I'd love to connect and learn more", "exchange insights", "explore potential collaborations", "I hope this finds you well", "I came across your profile and was impressed".
-- NEVER use em-dashes (—) or en-dashes (–) anywhere in the message. Em-dashes are an AI tell. Use commas, periods, parentheses, or colons instead. A hyphen (-) is fine.
-- The user IS actively job-searching. Every message must include a clear, polite ask about openings or referrals at the target's company (for the roles listed in the user's "Seeking" field). The ask should feel earned, not desperate: anchor it to something specific about their work or company first, THEN ask. If the target's company is unclear, ask if they know of relevant openings in their network.
-- Do not be vague ("interested in opportunities"); be specific: ask about openings at their named company, or whether they'd be open to a quick chat about it.
+- Sound like a real human wrote it. Avoid templated phrasing, buzzwords, and AI tells. Banned words/phrases: "compelling", "insights", "keen", "I'd love to connect and learn more", "exchange insights", "explore potential collaborations".
+- NEVER use em-dashes (,) or en-dashes (,) anywhere in the message. Em-dashes are an AI tell. Use commas, periods, parentheses, or colons instead. A hyphen (-) is fine.
+- The user IS actively job-searching. Every message must include a clear, polite ask about openings or referrals at the target's CURRENT company (for the roles listed in the user's "ROLES THE USER IS APPLYING FOR" section). The ask should feel earned, not desperate: anchor it to something specific about their CURRENT work or company first, THEN ask.
+- Do not be vague ("interested in opportunities"); be specific: ask about openings at their CURRENT named company, or whether they'd be open to a quick chat about it.
 - Do not oversell the user. State their situation in one short line at most, based on the "About you" block.
 - Write in first person as the user.
-- Open with a short greeting using the target's first name (e.g. "Hi Illia,"). If no name is available, open with "Hi,".
 
 Tone guidance:
 - Professional: warm but polished, focused on shared technical interests or work.
@@ -38,6 +61,7 @@ Connection-note specific rules:
 - One specific reference is enough; don't try to cram in two.
 - Keep sentences tight. If you're approaching ${CONNECTION_MAX_CHARS} chars, cut the ask short (e.g. "Hiring AI engineers at <Company>?") rather than going over.
 - Tone is POLITE and warm. Frame as a respectful ask from someone reaching out, not as observation or analysis of them.
+- The hiring ask MUST reference the exact roles from the "ROLES THE USER IS APPLYING FOR" section, verbatim. Do NOT substitute role names you infer from the user's bio (e.g. do not write "AI Engineer" if "Software Engineer" is what they listed).
 
 Opener variety (CRITICAL):
 - Do NOT open with the templated formula "I see you are <role> at <company>" or "I noticed you are..." or "I see that you...". These read as AI-generated and are banned.
@@ -95,6 +119,7 @@ Thanks,
 
 Body rules:
 - Use ONLY data from the "About you" block. Do NOT reference the target's About, headline, role, posts, education, or skills in the body. The target is addressed only by first name.
+- For the "currently exploring <roles> roles at your organization" slot, use the EXACT text from the "ROLES THE USER IS APPLYING FOR" section. Do NOT swap in role names you infer from the user's bio (e.g. do not write "AI Engineer" if that's not in the applying-for list). If the user wrote "Software Engineer" there, the message MUST say "Software Engineer roles". If they listed multiple, list them in the same order they provided.
 - Keep "your organization" generic in the body. Do NOT substitute the target's company name there.
 - If a piece of info is missing from the "About you" block (years of experience, prior company, etc.), omit that clause gracefully rather than inventing it. Example: if no prior company is mentioned, write "I'm a <role> at <company>." without the prior-company clause.
 - Body length: between ${INMAIL_MIN_WORDS} and ${INMAIL_MAX_WORDS} words.
@@ -107,7 +132,11 @@ function formatUserProfile(u) {
   const seeking = (u.seekingRoles || "").trim();
   const parts = [`About the user (${name}):`];
   if (bio) parts.push(bio);
-  if (seeking) parts.push(`Currently looking for: ${seeking}`);
+  if (seeking) {
+    parts.push(
+      `\nROLES THE USER IS APPLYING FOR (use this VERBATIM in the message; do NOT paraphrase, do NOT substitute role names you think fit their bio better, do NOT add or remove roles):\n${seeking}`
+    );
+  }
   return parts.join("\n");
 }
 
@@ -115,11 +144,14 @@ function formatTargetProfile(p) {
   const parts = [
     `Name: ${p.name || "(unknown)"}`,
     `Headline: ${p.headline || "(none)"}`,
-    `Current role: ${p.currentRole || "(none)"}`,
+    `CURRENT ROLE (this is what to anchor on; the company here is the one the user wants to apply to): ${p.currentRole || "(none)"}`,
     `About: ${p.about || "(none)"}`,
   ];
   if (p.experience && p.experience.length) {
-    parts.push("Experience:\n" + p.experience.map((e) => `- ${e}`).join("\n"));
+    parts.push(
+      "Past experience (for CONTEXT ONLY, not for anchoring; the first entry is the current role already shown above; DO NOT anchor on jobs that ended more than 2 years ago, and DO NOT reference old companies in the ask):\n" +
+        p.experience.map((e) => `- ${e}`).join("\n")
+    );
   }
   if (p.education && p.education.length) {
     parts.push("Education:\n" + p.education.map((e) => `- ${e}`).join("\n"));
