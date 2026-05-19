@@ -28,6 +28,10 @@ yarn-debug.log*
 dist/
 build/
 
+# Local-only: store submission assets and one-off dev scripts
+submission/
+scripts/
+
 # Secrets and local config
 .env
 .env.local

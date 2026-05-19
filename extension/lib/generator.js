@@ -1,6 +1,6 @@
 const CONNECTION_MAX_CHARS = 300;
-const INMAIL_MIN_WORDS = 250;
-const INMAIL_MAX_WORDS = 290;
+const INMAIL_MIN_WORDS = 60;
+const INMAIL_MAX_WORDS = 150;
 
 function buildSharedRules(userProfile) {
   const userBlock = formatUserProfile(userProfile);
@@ -41,29 +41,50 @@ Connection-note specific rules:
 }
 
 function buildInmailPrompt(userProfile) {
-  return `You write personalized LinkedIn InMail / DM messages on behalf of the user (long-form, NOT the 300-char connection request).
+  const userBlock = formatUserProfile(userProfile);
+  return `You write LinkedIn InMail / DM outreach messages on behalf of the user.
 
-${buildSharedRules(userProfile)}
+${userBlock}
 
-InMail-specific rules:
-- Length (BODY ONLY, excluding subject line): between ${INMAIL_MIN_WORDS} and ${INMAIL_MAX_WORDS} words. Count carefully. Do NOT go over ${INMAIL_MAX_WORDS} or under ${INMAIL_MIN_WORDS}.
-- Output format: FIRST line must be the subject line, prefixed exactly with "Subject: ". Then a blank line. Then the body. Example:
-  Subject: AI engineer roles at American Compute
+This is a STRUCTURED outreach template, not a personalized-on-the-target message. The InMail introduces the user (their role, experience, and the roles they are seeking) and asks the target if they or someone they know is hiring. Do NOT anchor on the target's About, headline, posts, or experience. Use the target's first name only.
 
-  Hi Illia,
+Universal rules:
+- Write in first person as the user.
+- NEVER use em-dashes (,) or en-dashes (,) anywhere in the message. Use commas, periods, parentheses, or colons. A hyphen (-) is fine.
+- Banned phrases: "compelling", "insights", "keen", "exchange insights", "explore potential collaborations", "I hope this finds you well", "I came across your profile and was impressed", "your work in AI", "your expertise in [broad field]", "production systems".
+- Sound like a real human wrote it. Plain language. No buzzwords, no marketing fluff.
+- Tone guidance:
+  - Professional: warm but polished.
+  - Casual: friendly and conversational.
+- Output: ONLY the message text. No quotes, no preamble, no explanation, no length count.
 
-  ...body paragraphs...
-- Subject line rules:
-  - Max 60 characters.
-  - Specific and concrete, referencing a real detail from their About / Headline / current company / Experience / a substantive Original post. NO generic subjects like "Quick question" or "Connecting". Never reference reposts.
-  - Lowercase or sentence case is fine, whichever feels more human. No clickbait, no exclamation marks.
-  - Do NOT mention "InMail", "introduction", or "outreach". Make it feel like a real human email subject.
-- Body structure:
-  1. Greeting.
-  2. Paragraph 1 (2 to 4 sentences): anchor on the strongest specific signal: About / headline / current role / current company, OR a substantive Original post if one is listed and relevant. Mirror their wording. Never anchor on reposts.
-  3. Paragraph 2 (2 to 4 sentences): bring in a second concrete detail from a different source (Experience, Education, or a different Original post) and tie it to a relevant overlap with the user's own work/stack (from the "About you" block).
-  4. Paragraph 3 (2 to 3 sentences): one short line on the user's situation (from "About you"), then the ask: directly ask if their company is hiring for the user's target roles, or if they'd be open to a quick chat about openings on their team. Be specific to their named company.
-  5. Optional one-line close.
+Output format: FIRST line is the subject line prefixed exactly with "Subject: ". Then a blank line. Then the body.
+
+Subject line rules:
+- Max 60 characters.
+- About the user's intent: openings for their target roles. May reference the target's company by name in the subject only. Sentence case. No clickbait, no exclamation marks.
+- Do NOT mention "InMail", "introduction", or "outreach".
+
+Body structure: follow this EXACT template. Keep the empty lines between paragraphs.
+
+Hi <target's first name>,
+
+Hope you are doing well.
+
+I'm a <user's current role> at <user's current company>, previously worked at <user's most recent prior company>.
+
+I have <N> years of experience in <user's core stack, 4 to 6 items, listed naturally> and currently exploring <user's seeking roles> roles at your organization.
+
+If you are hiring or know someone who is hiring for these positions, let me know, I can share my resume as well.
+
+Thanks,
+<user's first name>
+
+Body rules:
+- Use ONLY data from the "About you" block. Do NOT reference the target's About, headline, role, posts, education, or skills in the body. The target is addressed only by first name.
+- Keep "your organization" generic in the body. Do NOT substitute the target's company name there.
+- If a piece of info is missing from the "About you" block (years of experience, prior company, etc.), omit that clause gracefully rather than inventing it. Example: if no prior company is mentioned, write "I'm a <role> at <company>." without the prior-company clause.
+- Body length: between ${INMAIL_MIN_WORDS} and ${INMAIL_MAX_WORDS} words.
 - End body with "Thanks," on its own line, then the user's first name on the next line.`;
 }
 
@@ -181,7 +202,7 @@ export async function generateNote({ format, tone, profile, userProfile, apiKey,
   const maxTokens = fmt === "inmail" ? 900 : 250;
   const reminder =
     fmt === "inmail"
-      ? `between ${INMAIL_MIN_WORDS} and ${INMAIL_MAX_WORDS} words, at least two specific references, short paragraphs separated by blank lines, signoff with 'Thanks,' then the user's first name on the next line. Must include a clear, specific ask about openings or referrals at their company. NO em-dashes or en-dashes anywhere.`
+      ? `Follow the structured template exactly. Subject line on the first line. Then: greeting using target's first name, "Hope you are doing well.", one-sentence user intro (current role + company + prior company), one paragraph on user's stack and seeking-roles ending with "at your organization", the hiring ask, then "Thanks," and the user's first name. Use ONLY the user's About-you data in the body. Do NOT anchor on the target's profile in the body. Body length ${INMAIL_MIN_WORDS} to ${INMAIL_MAX_WORDS} words. NO em-dashes or en-dashes anywhere.`
       : `strictly under ${CONNECTION_MAX_CHARS} characters, one specific reference, single short paragraph, no signoff. Must include a short, specific ask about openings at their company. NO em-dashes or en-dashes anywhere.`;
 
   const userMessage =

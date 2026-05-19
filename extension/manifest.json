@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ConnectNote AI",
   "version": "1.0.0",
-  "description": "Generate personalized connection notes and outreach messages for professional profiles, using your own OpenAI API key. Not affiliated with LinkedIn.",
+  "description": "Generate personalized connection notes and outreach messages for professional profiles using your own OpenAI API key.",
   "permissions": ["activeTab", "scripting", "clipboardWrite", "storage"],
   "host_permissions": ["https://www.linkedin.com/*", "https://api.openai.com/*"],
   "options_page": "options.html",

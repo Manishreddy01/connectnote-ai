@@ -57,8 +57,8 @@ function updateCharCount() {
   const text = resultEl.value.trim();
   if (selectedFormat === "inmail") {
     const words = text ? text.split(/\s+/).length : 0;
-    charCountEl.textContent = `${words} words (target 250–290)`;
-    charCountEl.classList.toggle("over", words > 290 || (words > 0 && words < 250));
+    charCountEl.textContent = `${words} words (target 60-150)`;
+    charCountEl.classList.toggle("over", words > 150 || (words > 0 && words < 60));
   } else {
     const chars = text.length;
     charCountEl.textContent = `${chars} / 300 chars`;
