@@ -16,6 +16,7 @@ const statusEl = document.getElementById("status");
 const subjectRow = document.getElementById("subjectRow");
 const subjectEl = document.getElementById("subject");
 const copySubjectBtn = document.getElementById("copySubject");
+const extraContextEl = document.getElementById("extraContext");
 const openSettings = document.getElementById("openSettings");
 const openSettingsCta = document.getElementById("openSettingsCta");
 const setupCard = document.getElementById("setupCard");
@@ -176,6 +177,7 @@ generateBtn.addEventListener("click", async () => {
         aboutYou: settings.aboutYou,
         seekingRoles: settings.seekingRoles,
       },
+      extraContext: extraContextEl.value.trim(),
       apiKey: settings.apiKey,
       model: settings.model || "gpt-4o-mini",
     });

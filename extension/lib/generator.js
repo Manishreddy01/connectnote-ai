@@ -37,7 +37,20 @@ Connection-note specific rules:
 - Single short paragraph. No signoff, no "Best,", no name at the end. Just the note body after the greeting.
 - One specific reference is enough; don't try to cram in two.
 - Keep sentences tight. If you're approaching ${CONNECTION_MAX_CHARS} chars, cut the ask short (e.g. "Hiring AI engineers at <Company>?") rather than going over.
-- Structure: greeting, one sentence anchoring on the strongest specific signal (About / Headline / current role / current company, or a substantive Original post if available), one short sentence with the hiring ask. That's it.`;
+- Tone is POLITE and warm. Frame as a respectful ask from someone reaching out, not as observation or analysis of them.
+
+Opener variety (CRITICAL):
+- Do NOT open with the templated formula "I see you are <role> at <company>" or "I noticed you are..." or "I see that you...". These read as AI-generated and are banned.
+- Instead, vary the opener. Pick the pattern that best fits the specific anchor you have. Examples:
+  - Lead with appreciation: "Hi <name>, the work your team is doing on <X> at <Company> is exactly what I have been studying."
+  - Lead with shared interest: "Hi <name>, your <project/post/role> on <X> caught my attention because I have been working on something similar."
+  - Lead with a question framed as curiosity: "Hi <name>, quick question on the <X> work at <Company>..."
+  - Lead with a respectful direct ask: "Hi <name>, hope you don't mind the cold message. I have been following the <X> work at <Company> and wanted to reach out."
+  - Lead with the specific thing first, then yourself: "Hi <name>, <one specific thing about their work in 10 to 15 words>. I am a <user's short situation> and was hoping to ask..."
+- Do NOT start two consecutive sentences with "I". Vary the sentence subjects.
+- The opener should reference something specific (About, headline, role, company, or a substantive original post), but the sentence shape must not be "I see/notice you are X".
+
+Structure: greeting, one polite sentence that anchors on a specific signal (without using the banned opener formulas), one short sentence with the hiring ask. That is it.`;
 }
 
 function buildInmailPrompt(userProfile) {
@@ -192,11 +205,12 @@ async function callOpenAI({ apiKey, model, systemPrompt, userMessage, maxTokens 
   return stripDashes(text);
 }
 
-export async function generateNote({ format, tone, profile, userProfile, apiKey, model }) {
+export async function generateNote({ format, tone, profile, userProfile, extraContext, apiKey, model }) {
   const fmt = format === "inmail" ? "inmail" : "connection";
   const toneStr = (tone || "").trim() || "Professional";
   const modelStr = (model || "gpt-4o-mini").trim();
   const profileBlock = formatTargetProfile(profile);
+  const extras = (extraContext || "").trim();
 
   const systemPrompt = fmt === "inmail" ? buildInmailPrompt(userProfile) : buildConnectionPrompt(userProfile);
   const maxTokens = fmt === "inmail" ? 900 : 250;
@@ -205,11 +219,16 @@ export async function generateNote({ format, tone, profile, userProfile, apiKey,
       ? `Follow the structured template exactly. Subject line on the first line. Then: greeting using target's first name, "Hope you are doing well.", one-sentence user intro (current role + company + prior company), one paragraph on user's stack and seeking-roles ending with "at your organization", the hiring ask, then "Thanks," and the user's first name. Use ONLY the user's About-you data in the body. Do NOT anchor on the target's profile in the body. Body length ${INMAIL_MIN_WORDS} to ${INMAIL_MAX_WORDS} words. NO em-dashes or en-dashes anywhere.`
       : `strictly under ${CONNECTION_MAX_CHARS} characters, one specific reference, single short paragraph, no signoff. Must include a short, specific ask about openings at their company. NO em-dashes or en-dashes anywhere.`;
 
+  const extrasBlock = extras
+    ? `\nUser's additional instructions for THIS message (highest priority, but must NOT override hard constraints: character/word limits, banned phrases, no em-dashes, the structured template for InMail):\n${extras}\n`
+    : "";
+
   const userMessage =
     `Tone: ${toneStr}\n` +
     `Format: ${fmt}\n\n` +
-    `Target profile:\n${profileBlock}\n\n` +
-    `Write the message now. Remember: ${reminder}`;
+    `Target profile:\n${profileBlock}\n` +
+    extrasBlock +
+    `\nWrite the message now. Remember: ${reminder}`;
 
   let raw = await callOpenAI({
     apiKey,
