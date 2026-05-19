@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ConnectNote AI</title>
+  <style>
+    :root {
+      --blue: #0a66c2;
+      --blue-dark: #064a93;
+      --blue-soft: #eaf2fb;
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #15202b;
+      --muted: #5b6776;
+      --border: #e1e5ea;
+      --border-strong: #c8d0d9;
+      --danger: #cc1016;
+      --success: #137333;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    body {
+      width: 380px;
+      padding: 14px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--muted);
+      margin: 1px 0 0 0;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 6px;
+    }
+
+    .segmented {
+      display: flex;
+      background: #f0f2f5;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .segmented .seg-btn {
+      flex: 1;
+      padding: 7px 6px;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+    }
+
+    .segmented .seg-btn:hover:not(.active) {
+      color: var(--text);
+    }
+
+    .segmented .seg-btn.active {
+      background: white;
+      color: var(--blue);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    .field + .field { margin-top: 12px; }
+
+    .generate-btn {
+      width: 100%;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.12s, transform 0.08s;
+      margin-bottom: 12px;
+    }
+
+    .generate-btn:hover:not(:disabled) { background: var(--blue-dark); }
+    .generate-btn:active:not(:disabled) { transform: translateY(1px); }
+    .generate-btn:disabled { background: #93a3b3; cursor: not-allowed; }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .generate-btn.loading .spinner { display: inline-block; }
+    .generate-btn.loading .btn-text::after { content: "..."; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .subject-row { margin-bottom: 12px; }
+
+    .input-with-copy {
+      display: flex;
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    #subject {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+
+    #subject:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-soft);
+    }
+
+    .icon-btn {
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: white;
+      color: var(--blue);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+      white-space: nowrap;
+    }
+
+    .icon-btn:hover { background: var(--blue-soft); border-color: var(--blue); }
+    .icon-btn.copied { background: #e6f4ea; color: var(--success); border-color: var(--success); }
+
+    .result-wrap {
+      position: relative;
+    }
+
+    textarea#result {
+      width: 100%;
+      height: 240px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.55;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      resize: vertical;
+      background: white;
+      color: var(--text);
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+
+    textarea#result:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-soft);
+    }
+
+    textarea#result::placeholder { color: #93a3b3; font-style: italic; }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      min-height: 16px;
+    }
+
+    .status { font-weight: 500; }
+    .status.error { color: var(--danger); }
+    .status.success { color: var(--success); }
+
+    .char-count {
+      font-variant-numeric: tabular-nums;
+      padding: 2px 8px;
+      background: #f0f2f5;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+    .char-count.over {
+      color: var(--danger);
+      background: #fde8e9;
+      font-weight: 600;
+    }
+
+    .copy-btn-full {
+      width: 100%;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      background: white;
+      color: var(--blue);
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.12s;
+    }
+
+    .copy-btn-full:hover { background: var(--blue-soft); }
+    .copy-btn-full.copied { background: #e6f4ea; color: var(--success); border-color: var(--success); }
+
+    .footer {
+      text-align: center;
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <img class="logo" src="icons/icon48.png" alt="" />
+    <div style="flex:1;">
+      <h1 class="title">ConnectNote AI</h1>
+      <p class="subtitle">Personalized outreach, in one click</p>
+    </div>
+    <button id="openSettings" class="icon-btn" title="Settings" style="padding:6px 10px;">Settings</button>
+  </header>
+
+  <div id="setupCard" class="card" style="display:none; text-align:center;">
+    <h2 style="margin:0 0 6px; font-size:14px;">Set up your profile</h2>
+    <p style="margin:0 0 12px; color:var(--muted); font-size:12.5px;">
+      Add your name, bio, and OpenAI key. Stored only on this device.
+    </p>
+    <button id="openSettingsCta" class="generate-btn" style="margin:0;">Open Settings</button>
+  </div>
+
+  <div id="mainUi">
+
+  <section class="card">
+    <div class="field">
+      <label class="field-label">Message type</label>
+      <div class="segmented">
+        <button class="seg-btn format-btn active" data-format="connection">Connection</button>
+        <button class="seg-btn format-btn" data-format="inmail">InMail</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Tone</label>
+      <div class="segmented">
+        <button class="seg-btn tone-btn active" data-tone="Professional">Professional</button>
+        <button class="seg-btn tone-btn" data-tone="Casual">Casual</button>
+      </div>
+    </div>
+  </section>
+
+  <button id="generate" class="generate-btn">
+    <span class="spinner"></span>
+    <span class="btn-text">Generate Note</span>
+  </button>
+
+  <div id="subjectRow" class="subject-row" style="display:none;">
+    <label class="field-label" for="subject">Subject</label>
+    <div class="input-with-copy">
+      <input id="subject" type="text" readonly placeholder="Subject line will appear here..." />
+      <button id="copySubject" class="icon-btn">Copy</button>
+    </div>
+  </div>
+
+  <div class="result-wrap">
+    <textarea id="result" readonly placeholder="Your personalized note will appear here..."></textarea>
+    <div class="meta">
+      <span id="status" class="status"></span>
+      <span id="charCount" class="char-count">0 / 300 chars</span>
+    </div>
+  </div>
+
+  <button id="copy" class="copy-btn-full">Copy to Clipboard</button>
+
+  <p class="footer">Open a LinkedIn profile, pick a tone, click generate.</p>
+  <p class="footer" style="margin-top:4px;">&copy; 2026 @maneshreddy</p>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

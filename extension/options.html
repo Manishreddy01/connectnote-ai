@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ConnectNote AI, Setup</title>
+  <style>
+    :root {
+      --blue: #0a66c2;
+      --blue-dark: #064a93;
+      --blue-soft: #eaf2fb;
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #15202b;
+      --muted: #5b6776;
+      --border: #e1e5ea;
+      --border-strong: #c8d0d9;
+      --danger: #cc1016;
+      --success: #137333;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .logo { width: 44px; height: 44px; border-radius: 10px; }
+
+    h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+    .subtitle { color: var(--muted); font-size: 13px; margin: 2px 0 0 0; }
+
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px 6px 6px;
+      border-radius: 999px;
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .step.active {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+    .step.done {
+      border-color: var(--success);
+      color: var(--success);
+      background: #e6f4ea;
+    }
+    .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--border);
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step.active .step-num { background: var(--blue); }
+    .step.done .step-num { background: var(--success); }
+    .step.done .step-num::before { content: "✓"; font-size: 13px; }
+    .step.done .step-num > .num { display: none; }
+    .step-divider {
+      flex: 0 1 60px;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+      letter-spacing: -0.01em;
+    }
+    .card .card-desc {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 16px 0;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .field-help { font-size: 12px; color: var(--muted); margin: 4px 0 0 0; }
+    .field + .field { margin-top: 16px; }
+
+    input[type="text"], input[type="email"], input[type="password"], textarea, select {
+      width: 100%;
+      padding: 9px 11px;
+      font-size: 13px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-soft);
+    }
+    textarea { resize: vertical; min-height: 160px; line-height: 1.55; }
+
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 64px; }
+    .password-toggle {
+      position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+      background: none; border: none; color: var(--blue);
+      font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 8px;
+    }
+    .password-toggle:hover { color: var(--blue-dark); }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 18px;
+    }
+    .btn-primary {
+      padding: 10px 18px;
+      font-size: 14px; font-weight: 600;
+      background: var(--blue); color: white;
+      border: none; border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--blue-dark); }
+    .btn-primary:disabled { background: #93a3b3; cursor: not-allowed; }
+    .btn-secondary {
+      padding: 10px 14px;
+      font-size: 13px; font-weight: 600;
+      background: white; color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px; cursor: pointer;
+    }
+    .btn-secondary:hover { background: var(--bg); }
+
+    .save-status { font-size: 13px; color: var(--muted); }
+    .save-status.success { color: var(--success); font-weight: 600; }
+    .save-status.error { color: var(--danger); font-weight: 600; }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn-primary.loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .external-link { color: var(--blue); text-decoration: none; font-weight: 500; }
+    .external-link:hover { text-decoration: underline; }
+
+    .notice {
+      background: var(--blue-soft);
+      border-radius: 8px;
+      padding: 11px 13px;
+      font-size: 12.5px;
+      color: var(--text);
+      margin-top: 14px;
+      line-height: 1.55;
+    }
+
+    .prompt-helper {
+      background: #fff8e6;
+      border: 1px solid #f3deaa;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .prompt-helper .helper-title {
+      font-size: 13px; font-weight: 700;
+      margin: 0 0 4px 0;
+      color: #8a5a00;
+    }
+    .prompt-helper .helper-desc {
+      font-size: 12.5px; color: #6b4500;
+      margin: 0 0 10px 0;
+      line-height: 1.5;
+    }
+    .prompt-block {
+      background: #fffbf0;
+      border: 1px solid #f3deaa;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #5a3d00;
+      white-space: pre-wrap;
+      max-height: 220px;
+      overflow-y: auto;
+      margin: 0 0 10px 0;
+    }
+    .helper-actions {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .copy-prompt-btn {
+      padding: 6px 12px;
+      font-size: 12px; font-weight: 600;
+      background: #8a5a00; color: white;
+      border: none; border-radius: 6px;
+      cursor: pointer;
+    }
+    .copy-prompt-btn:hover { background: #6b4500; }
+    .copy-prompt-btn.copied { background: var(--success); }
+    .helper-status { font-size: 12px; color: #8a5a00; }
+
+    .howto {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 0 0 16px 0;
+    }
+    .howto summary {
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--blue);
+      list-style: none;
+    }
+    .howto summary::-webkit-details-marker { display: none; }
+    .howto summary::before { content: "▸  "; font-size: 11px; }
+    .howto[open] summary::before { content: "▾  "; }
+    .howto ol { margin: 10px 0 0 0; padding-left: 22px; font-size: 13px; color: var(--text); }
+    .howto li { margin-bottom: 5px; }
+
+    .success-card { text-align: center; padding: 32px 22px; }
+    .success-card .check {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: #e6f4ea;
+      color: var(--success);
+      font-size: 28px;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <img class="logo" src="icons/icon48.png" alt="" />
+      <div>
+        <h1>Set up ConnectNote AI</h1>
+        <p class="subtitle">Two quick steps. Your data stays on this device.</p>
+      </div>
+    </header>
+
+    <nav class="steps" id="steps">
+      <div class="step active" data-step="1">
+        <span class="step-num"><span class="num">1</span></span>
+        <span class="step-label">About you</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="2">
+        <span class="step-num"><span class="num">2</span></span>
+        <span class="step-label">OpenAI key</span>
+      </div>
+    </nav>
+
+    <!-- STEP 1: About you -->
+    <section class="card panel" data-panel="1">
+      <h2>About you</h2>
+      <p class="card-desc">Used in every personalized message. Keep it concise, in first person, under 250 words.</p>
+
+      <div class="field">
+        <label for="fullName">Full name</label>
+        <input id="fullName" type="text" placeholder="e.g. Jane Doe" />
+      </div>
+
+      <div class="field">
+        <label for="seekingRoles">Roles you're seeking</label>
+        <input id="seekingRoles" type="text" placeholder="e.g. AI Engineer, Software Engineer, ML Engineer" />
+      </div>
+
+      <div class="field">
+        <label for="aboutYou">About you</label>
+
+        <div class="prompt-helper">
+          <p class="helper-title">Not sure what to write? Let ChatGPT draft it for you.</p>
+          <p class="helper-desc">Copy this prompt, paste it into ChatGPT, replace the [your raw info] block with your resume / LinkedIn About text / anything relevant, then paste the response back into the "About you" field below.</p>
+          <pre id="bioPrompt" class="prompt-block">You're helping me set up a tool that writes personalized LinkedIn outreach notes on my behalf. Write me a short profile bio (150 to 250 words) I can paste into the tool. Include:
+- My current role and company
+- My education (school, degree, expected graduation)
+- My core technical stack (3 to 6 main tools/languages)
+- 1 to 2 prior roles, briefly
+- Any relevant certifications
+- The kinds of roles I'm currently looking for
+
+Write it as a tight first-person paragraph or short bullet list. Plain language, no marketing fluff, no buzzwords. Just the bio, no preamble.
+
+My raw info:
+[paste your resume, LinkedIn About, job titles, etc. here]</pre>
+          <div class="helper-actions">
+            <button type="button" id="copyPrompt" class="copy-prompt-btn">Copy prompt</button>
+            <span id="copyPromptStatus" class="helper-status"></span>
+          </div>
+        </div>
+
+        <textarea id="aboutYou" placeholder="Paste the bio you got from ChatGPT here..."></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="continueStep1" class="btn-primary">
+          <span class="spinner"></span>
+          <span class="btn-label">Continue to API key →</span>
+        </button>
+        <span id="step1Status" class="save-status"></span>
+      </div>
+    </section>
+
+    <!-- STEP 2: API key -->
+    <section class="card panel" data-panel="2" style="display:none;">
+      <h2>OpenAI API key</h2>
+      <p class="card-desc">Your key calls OpenAI directly from this extension. It never leaves your browser.</p>
+
+      <details class="howto" open>
+        <summary>How to get an OpenAI API key</summary>
+        <ol>
+          <li>Open <a class="external-link" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>.</li>
+          <li>Sign in, or create a free OpenAI account.</li>
+          <li>Click <strong>Create new secret key</strong>. Give it a name like "ConnectNote AI".</li>
+          <li>Copy the key (it starts with <code>sk-</code>) and paste it below.</li>
+        </ol>
+      </details>
+
+      <div class="field">
+        <label for="apiKey">OpenAI API key</label>
+        <div class="password-wrap">
+          <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false" />
+          <button type="button" id="toggleKey" class="password-toggle">Show</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="model">Model</label>
+        <select id="model">
+          <option value="gpt-4o-mini">gpt-4o-mini (recommended, fast and cheap)</option>
+          <option value="gpt-4o">gpt-4o (higher quality, more expensive)</option>
+          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+          <option value="gpt-4.1">gpt-4.1</option>
+        </select>
+      </div>
+
+      <div class="notice">
+        Your API key and profile are saved only to <strong>chrome.storage.sync</strong> on this device. They are never sent to any server other than OpenAI's API.
+      </div>
+
+      <div class="actions">
+        <button id="backToStep1" class="btn-secondary">← Back</button>
+        <button id="finish" class="btn-primary">
+          <span class="spinner"></span>
+          <span class="btn-label">Save &amp; finish</span>
+        </button>
+        <span id="step2Status" class="save-status"></span>
+      </div>
+    </section>
+
+    <!-- DONE: success state -->
+    <section class="card success-card panel" data-panel="done" style="display:none;">
+      <div class="check">✓</div>
+      <h2>You're all set</h2>
+      <p style="color:var(--muted); margin: 6px 0 18px;">
+        Open the extension on any LinkedIn profile and click Generate.
+      </p>
+      <button id="editAgain" class="btn-secondary">Edit settings</button>
+    </section>
+
+    <p style="text-align:center; color:var(--muted); font-size:12px; margin-top:18px;">
+      &copy; 2026 @maneshreddy
+    </p>
+  </div>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
