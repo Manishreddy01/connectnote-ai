@@ -106,11 +106,17 @@ function scrapeRawText() {
 
   const clone = main.cloneNode(true);
   const sections = clone.querySelectorAll("section");
+  const BANNED_SECTION_HEADERS = /\b(activity|posts|featured|interests|people you may know|recommended for you|people also viewed|people also searched|mutual connections|other similar profiles|connections in common|browse similar|browse to find|other profiles|more profiles|browse more)\b/i;
   for (const section of sections) {
     const header = section.querySelector("h2");
-    if (header && /\b(activity|posts|featured|interests|people you may know|recommended for you|people also viewed)\b/i.test(header.innerText)) {
+    if (header && BANNED_SECTION_HEADERS.test(header.innerText)) {
       section.remove();
     }
+  }
+
+  const asides = clone.querySelectorAll("aside");
+  for (const aside of asides) {
+    aside.remove();
   }
 
   const text = clone.innerText || "";

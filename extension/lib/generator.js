@@ -19,6 +19,7 @@ NEVER anchor on:
 - A past job that ended more than 2 years ago. If the target's experience list shows a current role, anchor on THAT, not on a job from 2018 or 2019. Past jobs are background information, not anchors.
 - Reposts, shared posts, or content the target did not write themselves.
 - Generic phrases like "your work in AI", "your expertise in [broad field]", "production systems", "your background in tech", "extensive experience in [field]". Those are bans.
+- ANY mention of mutual connections, shared connections, "people we both know", "I see we are both connected to", "we have X in common", or named third parties. The extension does NOT know the user's connection graph. Any names appearing in the input (sidebar lists, "people you may know", suggested profiles) are NOT the user's contacts and MUST NOT be referenced. Do not infer or invent shared connections under any circumstance.
 
 BANNED OPENERS (do NOT start the body with any of these, regardless of what follows):
 - "I see..." (e.g. "I see you are", "I see that you", "I see your")
@@ -77,6 +78,36 @@ Opener variety (CRITICAL):
 Structure: greeting, one polite sentence that anchors on a specific signal (without using the banned opener formulas), one short sentence with the hiring ask. That is it.`;
 }
 
+function buildConnectionTemplatePrompt(userProfile) {
+  const userBlock = formatUserProfile(userProfile);
+  return `You write a short LinkedIn connection request note on behalf of the user.
+
+${userBlock}
+
+This is a STRUCTURED self-introduction, NOT personalized to the target. Do NOT comment on, compliment, or analyze the target's work, posts, role, or background. The target is referenced only by first name, plus their current company name in one slot.
+
+Universal rules:
+- Write in first person as the user.
+- NEVER use em-dashes (,) or en-dashes (,). A hyphen (-) is fine.
+- Plain language. No buzzwords. No flattery, no "I admire / I'm impressed by your work".
+- Output: ONLY the note text. No quotes, no preamble, no subject line, no signoff.
+
+HARD LIMIT: the whole note must be under ${CONNECTION_MAX_CHARS} characters including greeting, spaces, and punctuation. Aim for 220 to 285.
+
+Follow this template:
+
+Hi <target first name> - I'm a <user's current role> with <N>+ years in <2 to 3 of the user's core stack items>, <short education line with expected graduation, if available>. Actively targeting <user's seeking roles> roles at <target's current company>. Would love to connect!
+
+Rules:
+- Use ONLY data from the "About you" block, except the target's first name and the target's current company name.
+- For the years-of-experience number: use the user's TOTAL professional experience. Do NOT use the tenure of one single past job. If the "About you" block states a total (e.g. "3 years of experience", "3+ years"), use that exact number. If it only lists separate jobs, add their durations together. Never undercount by picking just one job's length.
+- For the seeking-roles slot, use the roles from the "ROLES THE USER IS APPLYING FOR" section. You may shorten a long list to the 2 or 3 most important roles to fit the character limit, but do NOT change the role names themselves or substitute roles inferred from the bio.
+- Pick only 2 to 3 stack items, the most relevant ones. Do not list more (character budget).
+- If a piece of info is missing from "About you" (years of experience, education), omit that clause gracefully rather than inventing it.
+- COMPANY SLOT: use the target's REAL current company name (e.g. "at GitHub", "at Nutanix"). NEVER write a generic placeholder. The phrases "at your company", "at your organization", "at your team", "at your firm", "at their company" are BANNED in the connection note. If, and only if, the target's current company is genuinely unknown or shows as "(none)" in the input, drop the clause entirely and write "Actively targeting <roles> roles." with no "at ..." part at all. Never substitute a generic word for the company.
+- Keep the "Would love to connect!" closing line.`;
+}
+
 function buildInmailPrompt(userProfile) {
   const userBlock = formatUserProfile(userProfile);
   return `You write LinkedIn InMail / DM outreach messages on behalf of the user.
@@ -119,11 +150,28 @@ Thanks,
 
 Body rules:
 - Use ONLY data from the "About you" block. Do NOT reference the target's About, headline, role, posts, education, or skills in the body. The target is addressed only by first name.
+- For the years-of-experience number: use the user's TOTAL professional experience, not one single job's tenure. If the "About you" block states a total, use it exactly; if it lists separate jobs, add their durations. Never undercount.
 - For the "currently exploring <roles> roles at your organization" slot, use the EXACT text from the "ROLES THE USER IS APPLYING FOR" section. Do NOT swap in role names you infer from the user's bio (e.g. do not write "AI Engineer" if that's not in the applying-for list). If the user wrote "Software Engineer" there, the message MUST say "Software Engineer roles". If they listed multiple, list them in the same order they provided.
 - Keep "your organization" generic in the body. Do NOT substitute the target's company name there.
 - If a piece of info is missing from the "About you" block (years of experience, prior company, etc.), omit that clause gracefully rather than inventing it. Example: if no prior company is mentioned, write "I'm a <role> at <company>." without the prior-company clause.
 - Body length: between ${INMAIL_MIN_WORDS} and ${INMAIL_MAX_WORDS} words.
 - End body with "Thanks," on its own line, then the user's first name on the next line.`;
+}
+
+function buildInmailPersonalizedPrompt(userProfile) {
+  return `You write a personalized LinkedIn InMail / DM message on behalf of the user (long-form, NOT the 300-char connection request).
+
+${buildSharedRules(userProfile)}
+
+InMail-specific rules (personalized mode):
+- Output format: FIRST line is the subject line, prefixed exactly with "Subject: ". Then a blank line. Then the body.
+- Subject line: max 60 characters, sentence case, referencing the target's CURRENT role or company. No clickbait, no exclamation marks. Do NOT mention "InMail", "introduction", or "outreach".
+- Body length: between ${INMAIL_MIN_WORDS} and ${INMAIL_MAX_WORDS} words.
+- Body structure:
+  1. Greeting with the target's first name.
+  2. One short paragraph (2 to 3 sentences) anchoring on the target's CURRENT role at their current company, or a substantive Original post if one is listed. Keep it grounded, no flattery, no "I admire your work".
+  3. One short paragraph (2 to 3 sentences): one brief line on the user (from "About you"), then the ask: whether their team is hiring for the user's target roles (use the exact roles from the "ROLES THE USER IS APPLYING FOR" section), or whether they could point the user to the right person.
+- End the body with "Thanks," on its own line, then the user's first name on the next line.`;
 }
 
 function formatUserProfile(u) {
@@ -237,19 +285,30 @@ async function callOpenAI({ apiKey, model, systemPrompt, userMessage, maxTokens 
   return stripDashes(text);
 }
 
-export async function generateNote({ format, tone, profile, userProfile, extraContext, apiKey, model }) {
+export async function generateNote({ format, tone, profile, userProfile, extraContext, isRecruiter, apiKey, model }) {
   const fmt = format === "inmail" ? "inmail" : "connection";
+  const recruiterMode = isRecruiter !== false;
   const toneStr = (tone || "").trim() || "Professional";
   const modelStr = (model || "gpt-4o-mini").trim();
   const profileBlock = formatTargetProfile(profile);
   const extras = (extraContext || "").trim();
 
-  const systemPrompt = fmt === "inmail" ? buildInmailPrompt(userProfile) : buildConnectionPrompt(userProfile);
+  let systemPrompt;
+  let reminder;
+  if (fmt === "inmail" && recruiterMode) {
+    systemPrompt = buildInmailPrompt(userProfile);
+    reminder = `Follow the structured template exactly. Subject line on the first line. Then: greeting using target's first name, "Hope you are doing well.", one-sentence user intro (current role + company + prior company), one paragraph on user's stack and seeking-roles ending with "at your organization", the hiring ask, then "Thanks," and the user's first name. Use ONLY the user's About-you data in the body. Do NOT anchor on the target's profile in the body. Body length ${INMAIL_MIN_WORDS} to ${INMAIL_MAX_WORDS} words. NO em-dashes or en-dashes anywhere.`;
+  } else if (fmt === "inmail" && !recruiterMode) {
+    systemPrompt = buildInmailPersonalizedPrompt(userProfile);
+    reminder = `Personalized InMail. Subject line on the first line. First paragraph anchors on the target's CURRENT role or a substantive original post (no flattery). Second paragraph: one short line on the user, then the ask about openings on their team for the user's exact target roles. End with "Thanks," then the user's first name. Body length ${INMAIL_MIN_WORDS} to ${INMAIL_MAX_WORDS} words. NO em-dashes or en-dashes anywhere.`;
+  } else if (fmt === "connection" && recruiterMode) {
+    systemPrompt = buildConnectionTemplatePrompt(userProfile);
+    reminder = `Follow the connection template exactly: "Hi <first name> - I'm a <role> with <N>+ years in <stack>, <education>. Actively targeting <seeking roles> roles at <target's company>. Would love to connect!" Use only the user's About-you data plus the target's first name and current company. Strictly under ${CONNECTION_MAX_CHARS} characters. No flattery, no comment on the target. NO em-dashes or en-dashes anywhere.`;
+  } else {
+    systemPrompt = buildConnectionPrompt(userProfile);
+    reminder = `strictly under ${CONNECTION_MAX_CHARS} characters, one specific reference, single short paragraph, no signoff. Must include a short, specific ask about openings at their company. NO em-dashes or en-dashes anywhere.`;
+  }
   const maxTokens = fmt === "inmail" ? 900 : 250;
-  const reminder =
-    fmt === "inmail"
-      ? `Follow the structured template exactly. Subject line on the first line. Then: greeting using target's first name, "Hope you are doing well.", one-sentence user intro (current role + company + prior company), one paragraph on user's stack and seeking-roles ending with "at your organization", the hiring ask, then "Thanks," and the user's first name. Use ONLY the user's About-you data in the body. Do NOT anchor on the target's profile in the body. Body length ${INMAIL_MIN_WORDS} to ${INMAIL_MAX_WORDS} words. NO em-dashes or en-dashes anywhere.`
-      : `strictly under ${CONNECTION_MAX_CHARS} characters, one specific reference, single short paragraph, no signoff. Must include a short, specific ask about openings at their company. NO em-dashes or en-dashes anywhere.`;
 
   const extrasBlock = extras
     ? `\nUser's additional instructions for THIS message (highest priority, but must NOT override hard constraints: character/word limits, banned phrases, no em-dashes, the structured template for InMail):\n${extras}\n`
