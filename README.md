@@ -2,7 +2,9 @@
 
 A Chrome extension that writes a personalized LinkedIn connection note or outreach message for the profile you have open. Uses your own OpenAI API key.
 
-## Install
+> **Chrome Web Store version: coming soon.** The extension has been submitted to the Chrome Web Store and is currently under review by Google. Once it is approved, you will be able to install it in one click. Until then, use the install-from-source steps below (it is the exact same extension).
+
+## Install (from source, available now)
 
 1. Download this repo: click the green **Code** button above, then **Download ZIP**, and extract it.
 2. Open `chrome://extensions` in Chrome.
